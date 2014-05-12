@@ -4,20 +4,18 @@ using namespace cv;
 
 #define _USE_LIVE_VIDEO
 
-ofxCvGrayscaleImage hue,sat,bri,greyImg;
-ofImage edge;
-ofxCvBlob blob;
-ofxCvContourFinder contours;
-ofVideoGrabber vidGrabber;
-int cannyTh_1=50;
-int cannyTh_2=150;
-int thrshld;
-int w = 640;
-int h = 480;
-bool canny=false;
-bool invt=false;
-bool showContours=false;
+testApp::testApp() { // constructor
 
+    cannyTh_1=50;
+    cannyTh_2=150;
+    thrshld=50;
+    w=640;
+    h=480;
+    canny=false;
+    invt=false;
+    showContours=false;
+
+}
 //--------------------------------------------------------------
 void testApp::setup(){
 
@@ -57,18 +55,7 @@ void testApp::setup(){
 	nBandsToGet = 128;
 }
 
-void testApp::drawBlob(ofxCvBlob& blob){
 
-    ofFill();
-    float x = 0;
-    float y = 0;
-    ofSetColor(0x0000FF);
-    ofBeginShape();
-        for (int i = 0; i < blob.nPts; i++){
-            ofVertex(x + blob.pts[i].x, y + blob.pts[i].y);
-        }
-    ofEndShape(true);
-}
 //--------------------------------------------------------------
 
 void testApp::applyCanny() {
@@ -92,30 +79,30 @@ void testApp::applyCanny() {
     if (invt) {
         bri.threshold(0,true);
     }
-
-
     contours.findContours(bri, 1000, w*h/2, 10, true,true);
-    cout << contours.nBlobs << endl;
     if (contours.nBlobs > 0){
-        blob = contours.blobs.at(0);
         cout << contours.nBlobs << endl;
     }
-    //cout << contours.nBlobs << endl;
 
 }
+void testApp::drawBlobs(){
 
-void testApp::slider1Changed(int & canny){
-    cannyTh_1=canny;
-    //applyCanny();
-}
-void testApp::slider2Changed(int & canny){
-    cannyTh_2=canny;
-    //applyCanny();
-}
-void testApp::slider3Changed(int & th){
-    thrshld=th;
-    //applyCanny();
-}
+    ofEnableAlphaBlending();
+    ofFill();
+    float x = 0;
+    float y = 100;
+    for (int t=0;t<contours.nBlobs;t++) {
+
+            blob = contours.blobs.at(t);
+            ofBeginShape();
+            for (int i = 0; i < blob.nPts; i++){
+                   ofVertex(x + blob.pts[i].x, y + blob.pts[i].y);
+            }
+            ofEndShape(true);
+     }
+     ofDisableAlphaBlending();
+ }
+
 
 void testApp::update(){
     applyCanny();
@@ -147,39 +134,13 @@ void testApp::draw(){
     gui.draw();
     greyImg.draw(0,100);
     bri.draw(640,100);
-    //edge.draw(640,500);
-    if (showContours)   {
-        contours.draw(0,100);
-    }
-
+    if (contours.nBlobs > 0){   drawBlobs();    }
+    if (showContours)       {   contours.draw(0,100);    }
     if (bass > 0.4f)    {
         ofEnableAlphaBlending();
-    ofSetColor(255,0,0,100);
-    if (contours.nBlobs > 0){
-
-
-    ofFill();
-
-            float x = 0;
-            float y = 100;
-            for (int t=0;t<contours.nBlobs;t++) {
-                    blob = contours.blobs.at(t);
-            ofBeginShape();
-            for (int i = 0; i < blob.nPts; i++){
-                   ofVertex(x + blob.pts[i].x, y + blob.pts[i].y);
-                   cout << contours.nBlobs << endl;
-            }
-            ofEndShape(true);
-            }
-            ofDisableAlphaBlending();
-
-
-    }
-    //cout << contours.nBlobs << endl;
-	ofEnableAlphaBlending();
 		ofSetColor(255,255,255,100);
 		ofRect(0,600,5*128,200);
-	ofDisableAlphaBlending();
+        ofDisableAlphaBlending();
     }
 	// draw the fft resutls:
 	ofSetColor(255,255,255,255);
@@ -193,6 +154,19 @@ void testApp::draw(){
 
 
 }
+void testApp::slider1Changed(int & canny){
+    cannyTh_1=canny;
+    //applyCanny();
+}
+void testApp::slider2Changed(int & canny){
+    cannyTh_2=canny;
+    //applyCanny();
+}
+void testApp::slider3Changed(int & th){
+    thrshld=th;
+    //applyCanny();
+}
+
 void testApp::keyPressed(int key){
 
 	switch (key){
